@@ -14,7 +14,7 @@ var pagecols = 7
 var files = readdirSync(srcdir)
 var pageCount = Math.ceil(files.length/(pagerows*pagecols))
 var rowCount = Math.ceil(files.length/pagerows)
-var jt = jade.compile(fs.readFileSync('./galpage.jade')
+var jt = jade.compile(fs.readFileSync('./galpage.jade'),{pretty: true})
 
 for (var i = 0; i<pageCount; ++i) {
   //Construct rows
