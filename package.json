@@ -1,0 +1,16 @@
+{
+  "name": "swagr",
+  "version": "0.0.0",
+  "description": "A script for making static HTML photo galleries.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "author": "Stuart P. Bentley",
+  "license": "MIT",
+  "dependencies": {
+    "gm": "~1.6.1",
+    "jade": "~0.27.7"
+  }
+}
