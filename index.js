@@ -1,6 +1,7 @@
 var fs = require('fs')
 var gm = require('gm')
 var jade = require('jade')
+var stylus = require('stylus')
 
 //CONFIGURE. Yes, it's clunky. Sorry.
 var srcdir = './srcimgs'
@@ -22,6 +23,16 @@ function cpDirToDir(name,src,dest){
 function mkdirIfNotPresent(path) {
   if(!fs.statSync(path).isDirectory()){
     fs.mkdirSync(path)
+  }
+}
+
+function reportErrOr(fn) {
+  return function(err){
+    if(err){
+      console.error(err)
+    } else {
+      fn.apply(this,arguments)
+    }
   }
 }
 
@@ -68,13 +79,9 @@ for (var i = 0; i < pageCount; ++i) {
 mkdirIfNotPresent(destdir+'/thumbs')
 
 function reportThumbing(orig, thumb) {
-  return function (err) {
-    if (!err) {
-      console.log(orig + ' => ' + thumb)
-    } else {
-      console.error(err)
-    }
-  }
+  return reportErrOr(function () {
+    console.log(orig + ' => ' + thumb)
+  })
 }
 
 for(var i = 0; i < files.length; ++i) {
@@ -86,5 +93,9 @@ for(var i = 0; i < files.length; ++i) {
       files[i], destFilename))
 }
 
-//Copy static resources
-cpDirToDir('galstyle.css',__dirname,destdir)
+//Generate stylesheet
+stylus(fs.readFileSync(__dirname + '/galstyle.styl'))
+  .define('twidth',tsize)
+  .render(reportErrOr(function(css){
+    fs.writeFileSync(destdir+"/galstyle.css",css)
+  }))

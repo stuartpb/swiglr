@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "gm": "~1.6.1",
-    "jade": "~0.27.7"
+    "jade": "~0.27.7",
+    "stylus": "~0.31.0"
   }
 }
