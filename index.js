@@ -12,12 +12,27 @@ var pagecols = 7
 
 //RUN.
 
+function copyFile(src,dest) {
+  fs.createReadStream(src).pipe(fs.createWriteStream(dest));
+}
+function cpDirToDir(name,src,dest){
+  copyFile(src + '/' + name, dest + '/' + name)
+}
+
+function mkdirIfNotPresent(path) {
+  if(!fs.statSync(path).isDirectory()){
+    fs.mkdirSync(path)
+  }
+}
+
 var files = fs.readdirSync(srcdir)
 var pageCount = Math.ceil(files.length / (pagerows * pagecols))
-var rowCount = Math.ceil(files.length / pagerows)
+var rowCount = Math.ceil(files.length / pagecols)
 var jt = jade.compile(
   fs.readFileSync(__dirname+'/galpage.jade'),
   {pretty: true})
+
+mkdirIfNotPresent(destdir)
 
 for (var i = 0; i < pageCount; ++i) {
   //Construct rows
@@ -26,11 +41,11 @@ for (var i = 0; i < pageCount; ++i) {
   var startingImg = pagecols * startingRow
   for(var iRow = 0; iRow < pagerows && startingRow + iRow < rowCount; ++iRow) {
     rows[iRow] = []
-    for(var iCol = 0; iCol < pagecols; ++iCol) {
+    for(var iCol = 0; iCol < pagecols && startingImg + iRow * pagecols + iCol < files.length; ++iCol) {
       var iImg = startingImg + iRow * pagecols + iCol
       rows[iRow][iCol] = {
         dest: files[iImg],
-        thumb: 'thumbs/'+iImg+'.jpg'
+        thumb: 'thumbs/'+(iImg+1)+'.jpg'
       }
     }
   }
@@ -49,20 +64,27 @@ for (var i = 0; i < pageCount; ++i) {
 }
 
 //Generate thumbnails
-function thumbWriteCallback(success) {
+
+mkdirIfNotPresent(destdir+'/thumbs')
+
+function reportThumbing(orig, thumb) {
   return function (err) {
     if (!err) {
-      console.log(success)
+      console.log(orig + ' => ' + thumb)
     } else {
       console.error(err)
     }
   }
 }
 
-for(var i=0; i < files.length; ++i) {
-  gm(srcdir+'/'+files[i])
+for(var i = 0; i < files.length; ++i) {
+  var destFilename = '/thumbs/' + (i+1) + '.jpg'
+  gm(srcdir + '/' + files[i])
     //TODO: Get size and crop for the middle
     .resize(tsize,tsize)
-    .write(destdir+'/thumbs/'+i+'.jpg',thumbWriteCallback(
-      files[i]+' => '+destdir+'/thumbs/'+i+'.jpg'))
+    .write(destdir + destFilename, reportThumbing(
+      files[i], destFilename))
 }
+
+//Copy static resources
+cpDirToDir('galstyle.css',__dirname,destdir)
