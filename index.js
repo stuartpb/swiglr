@@ -109,10 +109,8 @@ if(opts.thumbnails) {
   for(var i = 0; i < files.length; ++i) {
     var destFilename = '/thumbs/' + (i+1) + '.jpg'
     gm(srcdir + '/' + files[i])
-      //TODO: Get size and crop for the middle
-      .resize(tsize,tsize)
-      .write(destdir + destFilename, reportThumbing(
-        files[i], destFilename))
+      .thumb(tsize, tsize, 63, 'middle', destdir + destFilename,
+        reportThumbing(files[i], destFilename))
   }
 }
 
