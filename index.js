@@ -1,14 +1,42 @@
 var fs = require('fs')
 var gm = require('gm')
 var jade = require('jade')
+var opts = require('nomnom').options({
+  source: {
+    abbr: 'i',
+    position: 0,
+    help: 'Directory of images'
+  },
+  destination: {
+    abbr: 'o',
+    position: 1,
+    help: 'Output directory'
+  },
+  thumbnails: {
+    flag: true,
+    default: true,
+  },
+  thumbnailWidth:{
+    help: 'Size of thumbnails, in pixels',
+    default: 150
+  },
+  title: {
+    default: 'Gallery'
+  },
+  rows: {
+    default: 4
+  },
+  columns:{
+    default: 7
+  }
+}).parse()
 
-//CONFIGURE. Yes, it's clunky. Sorry.
-var srcdir = './srcimgs'
-var destdir = './destsite'
-var tsize = 150
-var galtitle = 'Photos!'
-var pagerows = 4
-var pagecols = 7
+var srcdir = opts.source
+var destdir = opts.destination
+var tsize = opts.thumbnailWidth
+var galtitle = opts.title
+var pagerows = opts.rows
+var pagecols = opts.columns
 
 //RUN.
 
@@ -65,25 +93,27 @@ for (var i = 0; i < pageCount; ++i) {
 
 //Generate thumbnails
 
-mkdirIfNotPresent(destdir+'/thumbs')
-
-function reportThumbing(orig, thumb) {
-  return function (err) {
-    if (!err) {
-      console.log(orig + ' => ' + thumb)
-    } else {
-      console.error(err)
+if(opts.thumbnails) {
+  mkdirIfNotPresent(destdir+'/thumbs')
+  
+  function reportThumbing(orig, thumb) {
+    return function (err) {
+      if (!err) {
+        console.log(orig + ' => ' + thumb)
+      } else {
+        console.error(err)
+      }
     }
   }
-}
-
-for(var i = 0; i < files.length; ++i) {
-  var destFilename = '/thumbs/' + (i+1) + '.jpg'
-  gm(srcdir + '/' + files[i])
-    //TODO: Get size and crop for the middle
-    .resize(tsize,tsize)
-    .write(destdir + destFilename, reportThumbing(
-      files[i], destFilename))
+  
+  for(var i = 0; i < files.length; ++i) {
+    var destFilename = '/thumbs/' + (i+1) + '.jpg'
+    gm(srcdir + '/' + files[i])
+      //TODO: Get size and crop for the middle
+      .resize(tsize,tsize)
+      .write(destdir + destFilename, reportThumbing(
+        files[i], destFilename))
+  }
 }
 
 //Copy static resources
