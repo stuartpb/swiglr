@@ -56,11 +56,11 @@ function mkdirIfNotPresent(path) {
 }
 
 function reportErrOr(fn) {
-  return function(err){
-    if(err){
+  return function(err) {
+    if (err) {
       console.error(err)
     } else {
-      fn.apply(this,arguments)
+      fn.apply(this,Array.prototype.slice.call(arguments,1))
     }
   }
 }
